@@ -40,7 +40,9 @@ const { src, dest } = require('gulp'),
   webp = require('gulp-webp'),
   webphtml = require('gulp-webp-html'),
   webpcss = require('gulp-webpcss'),
-  svgSprite = require('gulp-svg-sprite');
+  svgSprite = require('gulp-svg-sprite'),
+  babel = require('gulp-babel'),
+  eslint = require('gulp-eslint');
 
 function browserSync(params) {
   browsersync.init({
@@ -61,7 +63,10 @@ function css() {
     .pipe(scss({ outputStyle: 'expanded' }))
     .pipe(group_media())
     .pipe(
-      autoprefixer({ overrideBrowserslist: ['last 5 versions'], cascade: true })
+      autoprefixer({
+        overrideBrowserslist: ['last 5 versions'],
+        cascade: true,
+      }),
     )
     .pipe(webpcss())
     .pipe(dest(path.build.css))
@@ -74,6 +79,7 @@ function js() {
   return src(path.src.js)
     .pipe(fileinclude())
     .pipe(dest(path.build.js))
+    .pipe(babel({ presets: ['@babel/preset-env'] }))
     .pipe(uglify())
     .pipe(rename({ extname: '.min.js' }))
     .pipe(dest(path.build.js))
@@ -95,7 +101,7 @@ function images() {
             removeViewBox: false,
           },
         ],
-      })
+      }),
     )
     .pipe(dest(path.build.img))
     .pipe(browsersync.stream());
@@ -112,7 +118,7 @@ gulp.task('svgSprite', function () {
             // example: true,
           },
         },
-      })
+      }),
     )
     .pipe(dest(path.build.img));
 });
