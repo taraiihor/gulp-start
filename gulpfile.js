@@ -1,4 +1,4 @@
-const project_folder = 'dist';
+const project_folder = 'build';
 const source_folder = 'src';
 
 const path = {
@@ -41,8 +41,11 @@ const { src, dest } = require('gulp'),
   webphtml = require('gulp-webp-html'),
   webpcss = require('gulp-webpcss'),
   svgSprite = require('gulp-svg-sprite'),
-  babel = require('gulp-babel'),
-  eslint = require('gulp-eslint');
+  // babel = require('gulp-babel'),
+  deploy = require('gulp-gh-pages'),
+  eslint = require('gulp-eslint'),
+  webpack = require('webpack'),
+  webpackStream = require('webpack-stream');
 
 function browserSync(params) {
   browsersync.init({
@@ -79,7 +82,32 @@ function js() {
   return src(path.src.js)
     .pipe(fileinclude())
     .pipe(dest(path.build.js))
-    .pipe(babel({ presets: ['@babel/preset-env'] }))
+    .pipe(
+      webpackStream({
+        mode: 'development',
+        output: {
+          filename: 'script.js',
+        },
+        module: {
+          rules: [
+            {
+              test: /\.m?js$/,
+              exclude: /(node_modules|bower_components)/,
+              use: {
+                loader: 'babel-loader',
+                options: {
+                  presets: ['@babel/preset-env'],
+                },
+              },
+            },
+          ],
+        },
+      }),
+    )
+    .on('error', function (err) {
+      console.error('WEBPACK ERROR', err);
+      this.emit('end'); // Don't stop the rest of the task
+    })
     .pipe(uglify())
     .pipe(rename({ extname: '.min.js' }))
     .pipe(dest(path.build.js))
@@ -106,7 +134,7 @@ function images() {
     .pipe(dest(path.build.img))
     .pipe(browsersync.stream());
 }
-
+gulp.task('deploy', () => src('./build/**/*').pipe(deploy()));
 gulp.task('svgSprite', function () {
   return gulp
     .src([source_folder + '/iconsprite/*.svg'])
