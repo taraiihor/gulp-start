@@ -41,8 +41,6 @@ const { src, dest } = require('gulp'),
   webphtml = require('gulp-webp-html'),
   webpcss = require('gulp-webpcss'),
   svgSprite = require('gulp-svg-sprite'),
-  // babel = require('gulp-babel'),
-  deploy = require('gulp-gh-pages'),
   eslint = require('gulp-eslint'),
   webpack = require('webpack'),
   webpackStream = require('webpack-stream');
@@ -134,7 +132,6 @@ function images() {
     .pipe(dest(path.build.img))
     .pipe(browsersync.stream());
 }
-gulp.task('deploy', () => src('./build/**/*').pipe(deploy()));
 gulp.task('svgSprite', function () {
   return gulp
     .src([source_folder + '/iconsprite/*.svg'])
